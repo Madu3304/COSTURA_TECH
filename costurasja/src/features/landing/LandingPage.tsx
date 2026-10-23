@@ -225,7 +225,7 @@ export const LandingPage: React.FC = () => {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   border: plan.is_popular ? '2px solid var(--primary)' : '1px solid var(--border)',
-                  boxShadow: plan.is_popular ? '0 8px 24px rgba(124, 92, 219, 0.12)' : 'var(--shadow-card)'
+                  boxShadow: plan.is_popular ? '0 8px 24px rgba(14, 116, 109, 0.15)' : 'var(--shadow-card)'
                 }}
               >
                 {plan.is_popular && (

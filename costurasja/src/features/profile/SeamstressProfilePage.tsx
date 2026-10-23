@@ -14,7 +14,8 @@ import {
   CheckCircle2, 
   Upload, 
   ChevronRight,
-  Maximize2
+  Maximize2,
+  ArrowLeft
 } from 'lucide-react';
 
 export const SeamstressProfilePage: React.FC = () => {
@@ -45,17 +46,40 @@ export const SeamstressProfilePage: React.FC = () => {
       {/* Light Cover Header */}
       <div
         style={{
-          height: '200px',
-          backgroundColor: '#EEE9FC',
-          backgroundImage: 'linear-gradient(135deg, #F1EFF8 0%, #EEE9FC 100%)',
+          height: '140px',
+          backgroundColor: '#E6F4F2',
+          backgroundImage: 'linear-gradient(135deg, #E0F2F0 0%, #CCEAE6 100%)',
           borderBottom: '1px solid var(--border)',
-          position: 'relative'
+          position: 'relative',
+          zIndex: 1
         }}
-      />
+      >
+        <div className="container" style={{ maxWidth: '1020px', paddingTop: '18px' }}>
+          <Link
+            to="/costureiras"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: 'var(--primary)',
+              textDecoration: 'none',
+              backgroundColor: '#FFFFFF',
+              padding: '6px 14px',
+              borderRadius: 'var(--radius-full)',
+              boxShadow: 'var(--shadow-card)',
+              border: '1px solid var(--border)'
+            }}
+          >
+            <ArrowLeft size={14} /> Voltar para Busca
+          </Link>
+        </div>
+      </div>
 
-      <div className="container" style={{ maxWidth: '1020px', marginTop: '-64px' }}>
+      <div className="container" style={{ maxWidth: '1020px', marginTop: '-48px', position: 'relative', zIndex: 2 }}>
         {/* Profile Card Header */}
-        <div className="card" style={{ padding: '32px', marginBottom: '24px' }}>
+        <div className="card" style={{ padding: '32px', marginBottom: '24px', position: 'relative', zIndex: 2 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
             <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
               <img
@@ -67,7 +91,7 @@ export const SeamstressProfilePage: React.FC = () => {
                   borderRadius: '16px',
                   objectFit: 'cover',
                   border: '4px solid #FFFFFF',
-                  boxShadow: '0 4px 12px rgba(31,27,45,0.08)'
+                  boxShadow: '0 4px 12px rgba(18,39,38,0.08)'
                 }}
               />
               <div>
@@ -203,10 +227,6 @@ export const SeamstressProfilePage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span className="text-muted">Lote Mínimo:</span>
                   <strong>{seamstress.min_pieces} peças</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span className="text-muted">Média de Preço:</span>
-                  <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{seamstress.price_range}</span>
                 </div>
               </div>
             </div>

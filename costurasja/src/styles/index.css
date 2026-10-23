@@ -100,7 +100,7 @@ p, span, label {
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
-  box-shadow: 0 2px 8px rgba(124, 92, 219, 0.28);
+  box-shadow: 0 2px 8px rgba(14, 116, 109, 0.28);
 }
 
 .btn-secondary {
@@ -111,7 +111,7 @@ p, span, label {
 
 .btn-secondary:hover {
   background-color: var(--surface);
-  border-color: #D3CDE2;
+  border-color: #B6D3CF;
 }
 
 .btn-soft {
@@ -120,7 +120,7 @@ p, span, label {
 }
 
 .btn-soft:hover {
-  background-color: #DFD5FA;
+  background-color: #CCEAE6;
 }
 
 .btn-danger {
@@ -180,7 +180,7 @@ p, span, label {
 
 .input:focus, .select:focus, .textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(124, 92, 219, 0.15);
+  box-shadow: 0 0 0 3px rgba(14, 116, 109, 0.15);
 }
 
 .input::placeholder, .textarea::placeholder {
@@ -244,8 +244,8 @@ p, span, label {
 }
 
 .card-hover:hover {
-  border-color: #D3CDE2;
-  box-shadow: 0 4px 14px rgba(31, 27, 45, 0.08);
+  border-color: #B6D3CF;
+  box-shadow: 0 4px 14px rgba(18, 39, 38, 0.08);
 }
 
 .card-surface {
@@ -322,7 +322,7 @@ p, span, label {
 .alert-primary {
   background-color: var(--primary-soft);
   color: var(--primary);
-  border: 1px solid #D5C6F7;
+  border: 1px solid #BFDFDB;
 }
 
 /* Stepper */
@@ -416,10 +416,10 @@ p, span, label {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D3CDE2;
+  background: #B6D3CF;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #BBB3CE;
+  background: #9EBEB9;
 }

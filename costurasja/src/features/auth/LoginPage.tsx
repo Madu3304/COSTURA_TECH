@@ -1,27 +1,93 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
 import { UserRole } from '../../lib/types';
-import { Mail, Lock, LogIn, Sparkles, Scissors, Building2, ShieldCheck } from 'lucide-react';
+import { 
+  Mail, 
+  Lock, 
+  LogIn, 
+  Scissors, 
+  Building2, 
+  ShieldCheck, 
+  Store, 
+  AlertCircle,
+  CheckCircle2
+} from 'lucide-react';
+
+const roleProfiles: Record<UserRole, { label: string; email: string }> = {
+  client: { label: 'Contratante', email: 'carlos@modaurbana.com.br' },
+  seamstress: { label: 'Costureira', email: 'maria.costuras@gmail.com' },
+  admin: { label: 'Admin', email: 'admin@alinhava.com.br' },
+  supplier: { label: 'Fornecedor', email: 'comercial@texbras.com.br' }
+};
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('carlos@modaurbana.com.br');
-  const [password, setPassword] = useState('••••••••');
-  const { login, switchRole } = useAuth();
+  const [searchParams] = useSearchParams();
+  const initialRole = (searchParams.get('tipo') as UserRole) || 'client';
+
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(initialRole);
+  const [email, setEmail] = useState(roleProfiles[initialRole]?.email || '');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [infoMsg, setInfoMsg] = useState('');
+
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const { loginWithCredentials } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    login('client');
-    navigate('/costureiras');
+  useEffect(() => {
+    const paramRole = searchParams.get('tipo') as UserRole;
+    if (paramRole && roleProfiles[paramRole]) {
+      setSelectedRole(paramRole);
+      setEmail(roleProfiles[paramRole].email);
+      setPassword('');
+      setInfoMsg(`Perfil selecionado: ${roleProfiles[paramRole].label}. Digite sua senha de 8 dígitos para acessar.`);
+    }
+  }, [searchParams]);
+
+  const handleSelectRole = (role: UserRole) => {
+    setSelectedRole(role);
+    setEmail(roleProfiles[role].email);
+    setPassword('');
+    setErrorMsg('');
+    setInfoMsg(`Perfil selecionado: ${roleProfiles[role].label}. Digite sua senha de 8 dígitos para acessar.`);
+    setTimeout(() => {
+      passwordRef.current?.focus();
+    }, 100);
   };
 
-  const handleQuickDemo = (role: UserRole) => {
-    switchRole(role);
-    if (role === 'admin') navigate('/admin');
-    else if (role === 'seamstress') navigate('/painel');
-    else if (role === 'client') navigate('/costureiras');
-    else if (role === 'supplier') navigate('/fornecedores');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setInfoMsg('');
+
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg('Por favor, informe um endereço de e-mail válido.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMsg('A senha deve conter no mínimo 8 dígitos cadastrados.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const loggedUser = await loginWithCredentials(cleanEmail, password);
+      
+      // Redireciona conforme o perfil autenticado no banco
+      if (loggedUser.role === 'admin') navigate('/admin');
+      else if (loggedUser.role === 'seamstress') navigate('/painel');
+      else if (loggedUser.role === 'client') navigate('/costureiras');
+      else if (loggedUser.role === 'supplier') navigate('/fornecedores');
+      else navigate('/painel');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'E-mail ou senha incorreto.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,54 +116,96 @@ export const LoginPage: React.FC = () => {
         </div>
 
         <div className="card" style={{ padding: '32px' }}>
-          {/* Quick Demo Access Bar */}
+          {/* Seleção do Perfil (Não acessa direto, exige senha) */}
           <div
             style={{
               backgroundColor: 'var(--surface)',
               borderRadius: 'var(--radius-md)',
-              padding: '12px',
-              marginBottom: '24px',
+              padding: '14px',
+              marginBottom: '20px',
               border: '1px solid var(--border)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--primary)', marginBottom: '8px' }}>
-              <Sparkles size={14} /> Atalho de Demonstração Rápida:
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--primary)', marginBottom: '10px' }}>
+              Selecione o perfil que deseja acessar:
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <button
                 type="button"
-                onClick={() => handleQuickDemo('client')}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '11px', justifyContent: 'flex-start' }}
+                onClick={() => handleSelectRole('client')}
+                className="btn btn-sm"
+                style={{
+                  fontSize: '11px',
+                  justifyContent: 'flex-start',
+                  backgroundColor: selectedRole === 'client' ? 'var(--primary-soft)' : '#FFFFFF',
+                  color: selectedRole === 'client' ? 'var(--primary)' : 'var(--text-primary)',
+                  border: selectedRole === 'client' ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  fontWeight: selectedRole === 'client' ? 600 : 500
+                }}
               >
-                <Building2 size={13} /> Contratante
+                <Building2 size={14} /> Contratante
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickDemo('seamstress')}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '11px', justifyContent: 'flex-start' }}
+                onClick={() => handleSelectRole('seamstress')}
+                className="btn btn-sm"
+                style={{
+                  fontSize: '11px',
+                  justifyContent: 'flex-start',
+                  backgroundColor: selectedRole === 'seamstress' ? 'var(--primary-soft)' : '#FFFFFF',
+                  color: selectedRole === 'seamstress' ? 'var(--primary)' : 'var(--text-primary)',
+                  border: selectedRole === 'seamstress' ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  fontWeight: selectedRole === 'seamstress' ? 600 : 500
+                }}
               >
-                <Scissors size={13} /> Costureira
+                <Scissors size={14} /> Costureira
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickDemo('admin')}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '11px', justifyContent: 'flex-start' }}
+                onClick={() => handleSelectRole('admin')}
+                className="btn btn-sm"
+                style={{
+                  fontSize: '11px',
+                  justifyContent: 'flex-start',
+                  backgroundColor: selectedRole === 'admin' ? 'var(--primary-soft)' : '#FFFFFF',
+                  color: selectedRole === 'admin' ? 'var(--primary)' : 'var(--text-primary)',
+                  border: selectedRole === 'admin' ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  fontWeight: selectedRole === 'admin' ? 600 : 500
+                }}
               >
-                <ShieldCheck size={13} /> Admin
+                <ShieldCheck size={14} /> Admin
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickDemo('supplier')}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '11px', justifyContent: 'flex-start' }}
+                onClick={() => handleSelectRole('supplier')}
+                className="btn btn-sm"
+                style={{
+                  fontSize: '11px',
+                  justifyContent: 'flex-start',
+                  backgroundColor: selectedRole === 'supplier' ? 'var(--primary-soft)' : '#FFFFFF',
+                  color: selectedRole === 'supplier' ? 'var(--primary)' : 'var(--text-primary)',
+                  border: selectedRole === 'supplier' ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  fontWeight: selectedRole === 'supplier' ? 600 : 500
+                }}
               >
-                Fornecedor
+                <Store size={14} /> Fornecedor
               </button>
             </div>
           </div>
+
+          {infoMsg && (
+            <div className="alert alert-primary" style={{ marginBottom: '16px', padding: '10px 14px', fontSize: '12px' }}>
+              <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+              <span>{infoMsg}</span>
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="alert alert-danger" style={{ marginBottom: '16px', padding: '10px 14px', fontSize: '13px' }}>
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           <form onSubmit={handleLogin}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
@@ -107,6 +215,7 @@ export const LoginPage: React.FC = () => {
                   <input
                     type="email"
                     required
+                    placeholder="seuemail@exemplo.com.br"
                     className="input"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -122,7 +231,7 @@ export const LoginPage: React.FC = () => {
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <label className="label" style={{ marginBottom: 0 }}>Senha</label>
+                  <label className="label" style={{ marginBottom: 0 }}>Senha (mínimo 8 dígitos)</label>
                   <a
                     href="#esqueci"
                     onClick={(e) => { e.preventDefault(); alert('Link de recuperação enviado para seu e-mail cadastrado.'); }}
@@ -133,8 +242,11 @@ export const LoginPage: React.FC = () => {
                 </div>
                 <div style={{ position: 'relative' }}>
                   <input
+                    ref={passwordRef}
                     type="password"
                     required
+                    minLength={8}
+                    placeholder="Digite sua senha de 8 dígitos"
                     className="input"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -146,16 +258,24 @@ export const LoginPage: React.FC = () => {
                     style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }}
                   />
                 </div>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+                  A senha é verificada diretamente no banco de dados.
+                </span>
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginBottom: '16px' }}>
-              <LogIn size={16} /> Entrar na Plataforma
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="btn btn-primary" 
+              style={{ width: '100%', marginBottom: '16px' }}
+            >
+              <LogIn size={16} /> {loading ? 'Verificando no banco...' : 'Entrar na Plataforma'}
             </button>
 
             <button
               type="button"
-              onClick={() => { login('client'); navigate('/costureiras'); }}
+              onClick={() => alert('Autenticação com Google disponível para contas com e-mail corporativo cadastrado.')}
               className="btn btn-secondary"
               style={{ width: '100%' }}
             >

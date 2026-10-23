@@ -3,17 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { UserRole } from '../lib/types';
 import { 
-  Home, 
   Search, 
   MessageSquare, 
   Package, 
   LayoutDashboard, 
   Layers, 
   ShieldCheck, 
-  User as UserIcon, 
   LogOut, 
   Sparkles,
-  Store,
   Scissors
 } from 'lucide-react';
 
@@ -53,9 +50,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sparkles size={16} color="#B89DF8" />
+          <Sparkles size={16} color="#48C7B9" />
           <span style={{ fontWeight: 600 }}>Simulador de Perfil (Seção 2):</span>
-          <span style={{ color: '#D3CDE2', fontSize: '12px' }}>
+          <span style={{ color: '#B2DFDB', fontSize: '12px' }}>
             Alternar perfil para visualizar as telas e permissões correspondentes:
           </span>
         </div>
@@ -64,6 +61,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <button
               key={item.role}
               onClick={() => {
+                if (!currentUser) {
+                  navigate(`/entrar?tipo=${item.role}`);
+                  return;
+                }
                 switchRole(item.role);
                 if (item.role === 'admin') navigate('/admin');
                 else if (item.role === 'seamstress') navigate('/painel');
@@ -185,19 +186,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
                     textDecoration: 'none',
-                    padding: '4px 8px',
+                    padding: '6px 14px',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border)',
                     backgroundColor: 'var(--surface)'
                   }}
                 >
-                  <img
-                    src={currentUser.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                    alt={currentUser.name}
-                    style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
                   <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {currentUser.name.split(' ')[0]}
@@ -232,110 +227,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       </header>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, paddingBottom: '70px' }}>
+      <main style={{ flex: 1 }}>
         {children}
       </main>
-
-      {/* Mobile Bottom Navigation (Specified in Section 9: Início, Buscar/Oportunidades, Chat, Pedidos) */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '62px',
-          backgroundColor: '#FFFFFF',
-          borderTop: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          zIndex: 40,
-          boxShadow: '0 -2px 10px rgba(31,27,45,0.05)'
-        }}
-        className="mobile-bottom-nav"
-      >
-        <Link
-          to="/"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px',
-            textDecoration: 'none',
-            color: isCurrent('/') && location.pathname === '/' ? 'var(--primary)' : 'var(--text-secondary)',
-            fontSize: '11px',
-            fontWeight: 500
-          }}
-        >
-          <Home size={20} strokeWidth={1.75} />
-          <span>Início</span>
-        </Link>
-
-        <Link
-          to="/costureiras"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px',
-            textDecoration: 'none',
-            color: isCurrent('/costureiras') ? 'var(--primary)' : 'var(--text-secondary)',
-            fontSize: '11px',
-            fontWeight: 500
-          }}
-        >
-          <Search size={20} strokeWidth={1.75} />
-          <span>{currentRole === 'seamstress' ? 'Oportunidades' : 'Buscar'}</span>
-        </Link>
-
-        <Link
-          to="/chat"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px',
-            textDecoration: 'none',
-            color: isCurrent('/chat') ? 'var(--primary)' : 'var(--text-secondary)',
-            fontSize: '11px',
-            fontWeight: 500,
-            position: 'relative'
-          }}
-        >
-          <div style={{ position: 'relative' }}>
-            <MessageSquare size={20} strokeWidth={1.75} />
-            <span
-              style={{
-                position: 'absolute',
-                top: -2,
-                right: -4,
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--primary)'
-              }}
-            />
-          </div>
-          <span>Chat</span>
-        </Link>
-
-        <Link
-          to="/pedidos"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px',
-            textDecoration: 'none',
-            color: isCurrent('/pedidos') ? 'var(--primary)' : 'var(--text-secondary)',
-            fontSize: '11px',
-            fontWeight: 500
-          }}
-        >
-          <Package size={20} strokeWidth={1.75} />
-          <span>Pedidos</span>
-        </Link>
-      </div>
     </div>
   );
 };

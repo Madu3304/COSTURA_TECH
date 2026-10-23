@@ -156,7 +156,18 @@ export const SearchPage: React.FC = () => {
         {/* Main Search Layout: Sidebar Filters + Cards Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '28px', alignItems: 'start' }}>
           {/* Left Filter Sidebar */}
-          <div className="card" style={{ padding: '24px', position: 'sticky', top: '90px' }}>
+          <div
+            className="card"
+            style={{
+              padding: '24px 18px 24px 24px',
+              position: 'sticky',
+              top: '90px',
+              maxHeight: 'calc(100vh - 120px)',
+              overflowY: 'auto',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'var(--border) transparent'
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
                 <SlidersHorizontal size={18} color="var(--primary)" /> Filtros
@@ -318,9 +329,9 @@ export const SearchPage: React.FC = () => {
                 <div
                   style={{
                     height: '480px',
-                    backgroundColor: '#EBE7F5',
+                    backgroundColor: '#E6F2F0',
                     position: 'relative',
-                    backgroundImage: 'radial-gradient(#D3CDE2 1.5px, transparent 1.5px)',
+                    backgroundImage: 'radial-gradient(#B6D5D1 1.5px, transparent 1.5px)',
                     backgroundSize: '24px 24px',
                     display: 'flex',
                     alignItems: 'center',
@@ -440,9 +451,6 @@ export const SearchPage: React.FC = () => {
                               <Star size={16} fill="#F5A623" color="#F5A623" />
                               <span style={{ fontWeight: 700, fontSize: '15px' }}>{item.rating.toFixed(1)}</span>
                               <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>({item.reviews_count})</span>
-                            </div>
-                            <div style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, marginTop: '4px' }}>
-                              {item.price_range}
                             </div>
                           </div>
                         </div>

@@ -8,12 +8,7 @@ import {
   Store, 
   Check, 
   ArrowRight, 
-  ShieldCheck, 
-  Phone, 
-  Smartphone,
-  Lock,
-  Mail,
-  User
+  AlertCircle
 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
@@ -21,13 +16,14 @@ export const RegisterPage: React.FC = () => {
   const initialType = searchParams.get('tipo') === 'costureira' ? 'seamstress' : 'client';
   
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialType);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
-  const [codeSent, setCodeSent] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '(11) 98765-4321',
+    phone: '',
     password: '',
     company_name: '',
     cnpj: '',
@@ -35,23 +31,41 @@ export const RegisterPage: React.FC = () => {
     state: 'SP'
   });
 
-  const { switchRole } = useAuth();
+  const { registerUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleNextStep = (e: React.FormEvent) => {
+  const handleCompleteRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step === 1) {
-      setStep(2);
-    } else if (step === 2) {
-      setCodeSent(true);
-      setStep(3);
-    } else if (step === 3) {
-      switchRole(selectedRole);
+    if (!formData.email || !formData.email.includes('@')) {
+      setErrorMsg('Por favor, informe um endereço de e-mail válido.');
+      return;
+    }
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      await registerUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: selectedRole,
+        phone: formData.phone,
+        company_name: formData.company_name,
+        cnpj: formData.cnpj,
+        city: formData.city,
+        state: formData.state
+      });
+
       if (selectedRole === 'seamstress') {
         navigate('/onboarding');
-      } else {
+      } else if (selectedRole === 'client') {
         navigate('/costureiras');
+      } else {
+        navigate('/fornecedores');
       }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Erro ao realizar o cadastro. Verifique os dados informados.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,19 +74,18 @@ export const RegisterPage: React.FC = () => {
       <div className="container" style={{ maxWidth: '640px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)', textTransform: 'uppercase' }}>
-            Etapa {step} de 3
+            Etapa {step} de 2
           </span>
           <h1 style={{ fontSize: '28px', marginTop: '4px' }}>Crie sua conta na Alinhava</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px' }}>
-            {step === 1 && 'Escolha como você deseja utilizar a plataforma'}
-            {step === 2 && 'Preencha as informações do seu cadastro'}
-            {step === 3 && 'Confirme seu número via WhatsApp ou SMS'}
+            {step === 1 && 'Escolha o nível de cadastro do seu perfil na plataforma'}
+            {step === 2 && 'Preencha suas informações cadastrais para acessar'}
           </p>
         </div>
 
         {/* Stepper Dots */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
-          {[1, 2, 3].map((s) => (
+          {[1, 2].map((s) => (
             <div
               key={s}
               style={{
@@ -86,13 +99,21 @@ export const RegisterPage: React.FC = () => {
           ))}
         </div>
 
+        {errorMsg && (
+          <div className="alert alert-danger" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertCircle size={18} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         <div className="card" style={{ padding: '32px' }}>
+          {/* ETAPA 1: Seleção dos 3 Níveis de Cadastro */}
           {step === 1 && (
             <div>
-              <h3 style={{ fontSize: '18px', marginBottom: '18px' }}>Selecione seu perfil</h3>
+              <h3 style={{ fontSize: '18px', marginBottom: '18px' }}>Selecione seu nível de cadastro</h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
-                {/* Costureira */}
+                {/* 1. Nível: Costureira / Facção */}
                 <div
                   onClick={() => setSelectedRole('seamstress')}
                   style={{
@@ -124,7 +145,7 @@ export const RegisterPage: React.FC = () => {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: 600, fontSize: '15px' }}>Sou Costureira / Facção</span>
+                      <span style={{ fontWeight: 600, fontSize: '15px' }}>1. Sou Costureira / Facção</span>
                       <span className="badge badge-success">Cadastro Grátis</span>
                     </div>
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -133,7 +154,7 @@ export const RegisterPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Contratante */}
+                {/* 2. Nível: Contratante / Marca */}
                 <div
                   onClick={() => setSelectedRole('client')}
                   style={{
@@ -165,7 +186,7 @@ export const RegisterPage: React.FC = () => {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: 600, fontSize: '15px' }}>Sou Contratante / Marca</span>
+                      <span style={{ fontWeight: 600, fontSize: '15px' }}>2. Sou Contratante / Confecção / Marca</span>
                       <span className="badge badge-primary">Empresas & Marcas</span>
                     </div>
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -174,7 +195,7 @@ export const RegisterPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Fornecedor */}
+                {/* 3. Nível: Fornecedor Têxtil */}
                 <div
                   onClick={() => setSelectedRole('supplier')}
                   style={{
@@ -206,11 +227,11 @@ export const RegisterPage: React.FC = () => {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: 600, fontSize: '15px' }}>Sou Fornecedor Têxtil</span>
+                      <span style={{ fontWeight: 600, fontSize: '15px' }}>3. Sou Fornecedor Têxtil</span>
                       <span className="badge badge-neutral">Vitrine & Insumos</span>
                     </div>
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      Divulgue máquinas, tecidos e aviamentos para toda a rede de confecções.
+                      Divulgue máquinas, tecidos e aviamentos para toda a rede nacional de confecções.
                     </p>
                   </div>
                 </div>
@@ -227,8 +248,9 @@ export const RegisterPage: React.FC = () => {
             </div>
           )}
 
+          {/* ETAPA 2: Preenchimento de Dados e Finalização Direta */}
           {step === 2 && (
-            <form onSubmit={handleNextStep}>
+            <form onSubmit={handleCompleteRegistration}>
               <h3 style={{ fontSize: '18px', marginBottom: '18px' }}>Dados do seu perfil</h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
@@ -245,11 +267,11 @@ export const RegisterPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="label">E-mail Profissional</label>
+                  <label className="label">E-mail</label>
                   <input
                     type="email"
                     required
-                    placeholder="contato@minhaconfeccao.com.br"
+                    placeholder="seuemail@exemplo.com.br"
                     className="input"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -258,10 +280,9 @@ export const RegisterPage: React.FC = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label className="label">WhatsApp com DDD</label>
+                    <label className="label">Telefone / WhatsApp (Opcional)</label>
                     <input
                       type="text"
-                      required
                       placeholder="(11) 98765-4321"
                       className="input"
                       value={formData.phone}
@@ -281,16 +302,28 @@ export const RegisterPage: React.FC = () => {
                   </div>
                 </div>
 
-                {selectedRole === 'client' && (
-                  <div>
-                    <label className="label">CNPJ da Empresa</label>
-                    <input
-                      type="text"
-                      placeholder="00.000.000/0001-00"
-                      className="input"
-                      value={formData.cnpj}
-                      onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                    />
+                {(selectedRole === 'client' || selectedRole === 'supplier') && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label className="label">Razão Social / Nome Fantasia</label>
+                      <input
+                        type="text"
+                        placeholder="Nome da sua empresa"
+                        className="input"
+                        value={formData.company_name}
+                        onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">CNPJ da Empresa</label>
+                      <input
+                        type="text"
+                        placeholder="00.000.000/0001-00"
+                        className="input"
+                        value={formData.cnpj}
+                        onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -320,6 +353,7 @@ export const RegisterPage: React.FC = () => {
                       <option value="PE">PE</option>
                       <option value="CE">CE</option>
                       <option value="PR">PR</option>
+                      <option value="RS">RS</option>
                     </select>
                   </div>
                 </div>
@@ -336,83 +370,18 @@ export const RegisterPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={loading}
                   className="btn btn-primary"
                   style={{ flex: 2 }}
                 >
-                  Verificar Telefone <ArrowRight size={16} />
+                  {loading ? 'Criando conta...' : (
+                    <>
+                      Concluir Cadastro e Acessar <ArrowRight size={16} />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
-          )}
-
-          {step === 3 && (
-            <div>
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <div
-                  style={{
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary-soft)',
-                    color: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 16px'
-                  }}
-                >
-                  <Smartphone size={28} />
-                </div>
-                <h3 style={{ fontSize: '20px' }}>Código de Verificação SMS / WhatsApp</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px' }}>
-                  Enviamos um código de 6 dígitos para o número <strong>{formData.phone}</strong>
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', margin: '24px 0' }}>
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <input
-                    key={i}
-                    type="text"
-                    maxLength={1}
-                    className="input"
-                    style={{ width: '44px', height: '48px', textAlign: 'center', fontSize: '20px', fontWeight: 700 }}
-                    value={verificationCode[i] || (i === 0 ? '7' : i === 1 ? '4' : i === 2 ? '9' : '')}
-                    onChange={(e) => {
-                      const newCode = [...verificationCode];
-                      newCode[i] = e.target.value;
-                      setVerificationCode(newCode);
-                    }}
-                  />
-                ))}
-              </div>
-
-              <div className="alert alert-primary" style={{ marginBottom: '24px', fontSize: '13px' }}>
-                <ShieldCheck size={20} style={{ flexShrink: 0 }} />
-                <span>
-                  A verificação de telefone garante que apenas profissionais e marcas autênticas participem da plataforma Alinhava.
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleNextStep}
-                className="btn btn-primary"
-                style={{ width: '100%', marginBottom: '12px' }}
-              >
-                Concluir Cadastro e Acessar <Check size={16} />
-              </button>
-
-              <div style={{ textAlign: 'center' }}>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => alert('Novo código enviado com sucesso!')}
-                >
-                  Não recebeu? Reenviar código em 45s
-                </button>
-              </div>
-            </div>
           )}
         </div>
 

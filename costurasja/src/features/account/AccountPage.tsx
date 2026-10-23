@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../app/AuthContext';
 import { 
   User, 
@@ -13,7 +13,30 @@ import {
 } from 'lucide-react';
 
 export const AccountPage: React.FC = () => {
-  const { currentUser, currentRole } = useAuth();
+  const { currentUser, currentRole, updateCurrentUser } = useAuth();
+
+  const [formData, setFormData] = useState({
+    name: currentUser?.name || '',
+    email: currentUser?.email || '',
+    phone: currentUser?.phone || '',
+    company_name: currentUser?.company_name || ''
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Sincronizar campos quando o currentUser carregar do backend
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        company_name: currentUser.company_name || ''
+      });
+    }
+  }, [currentUser]);
 
   const [notifications, setNotifications] = useState({
     whatsapp: true,
@@ -27,12 +50,19 @@ export const AccountPage: React.FC = () => {
     confirm: ''
   });
 
-  const [savedSuccess, setSavedSuccess] = useState(false);
-
-  const handleSaveData = (e: React.FormEvent) => {
+  const handleSaveData = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+    setSaving(true);
+    setErrorMessage('');
+    try {
+      await updateCurrentUser(formData);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      setErrorMessage('Erro ao salvar os dados no servidor.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleExportDataLGPD = () => {
@@ -77,25 +107,57 @@ export const AccountPage: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '20px' }}>
                 <div>
                   <label className="label">Nome Completo</label>
-                  <input type="text" className="input" defaultValue={currentUser?.name} />
+                  <input
+                    type="text"
+                    required
+                    className="input"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="label">E-mail</label>
-                  <input type="email" className="input" defaultValue={currentUser?.email} />
+                  <input
+                    type="email"
+                    required
+                    className="input"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="label">Telefone / WhatsApp</label>
-                  <input type="text" className="input" defaultValue={currentUser?.phone} />
+                  <input
+                    type="text"
+                    className="input"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="label">Empresa / Razão Social</label>
-                  <input type="text" className="input" defaultValue={currentUser?.company_name} />
+                  <input
+                    type="text"
+                    className="input"
+                    value={formData.company_name}
+                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button type="submit" className="btn btn-primary btn-sm">
-                  {savedSuccess ? <><Check size={14} /> Dados Salvos!</> : 'Salvar Alterações'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+                {errorMessage && (
+                  <span style={{ color: 'var(--danger)', fontSize: '13px' }}>
+                    {errorMessage}
+                  </span>
+                )}
+                {savedSuccess && (
+                  <span style={{ color: 'var(--success)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                    <Check size={16} /> Dados salvos no banco com sucesso!
+                  </span>
+                )}
+                <button type="submit" disabled={saving} className="btn btn-primary btn-sm">
+                  {saving ? 'Salvando...' : savedSuccess ? 'Salvo!' : 'Salvar Alterações'}
                 </button>
               </div>
             </form>
