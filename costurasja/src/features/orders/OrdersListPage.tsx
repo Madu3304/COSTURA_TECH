@@ -41,7 +41,7 @@ export const OrdersListPage: React.FC = () => {
       case 'aceito':
         return <span className="badge badge-primary">Acordo Confirmado</span>;
       case 'em_producao':
-        return <span className="badge badge-primary" style={{ backgroundColor: '#E5DCFB', color: '#5638AB' }}>Em Produção Ativa</span>;
+        return <span className="badge badge-primary">Em Produção Ativa</span>;
       case 'enviado':
         return <span className="badge badge-warning">Em Transporte</span>;
       case 'entregue':

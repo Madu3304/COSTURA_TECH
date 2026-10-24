@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
 import { UserRole } from '../../lib/types';
+import logoImg from '../../assets/logo.png';
 import { 
   Scissors, 
   Building2, 
@@ -73,6 +74,13 @@ export const RegisterPage: React.FC = () => {
     <div style={{ padding: '48px 0', minHeight: '85vh', display: 'flex', alignItems: 'center' }}>
       <div className="container" style={{ maxWidth: '640px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <img
+              src={logoImg}
+              alt="Alinhava Gestão Têxtil"
+              style={{ height: '54px', width: 'auto', margin: '0 auto', display: 'block' }}
+            />
+          </div>
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)', textTransform: 'uppercase' }}>
             Etapa {step} de 2
           </span>

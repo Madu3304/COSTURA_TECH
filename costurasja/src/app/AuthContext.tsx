@@ -19,39 +19,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentRole, setCurrentRole] = useState<UserRole>('client');
-  const [currentUser, setCurrentUser] = useState<User | null>(mockUsers['client']);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('alinhava_active_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
 
-  // Load from Backend (or localStorage / mock fallback) on role change
+  // Sync with Python SQLite Backend when user is authenticated
   useEffect(() => {
     let isMounted = true;
 
-    async function loadUser() {
-      // Check localStorage first for instant display
-      const savedLocally = localStorage.getItem(`alinhava_user_${currentRole}`);
-      if (savedLocally) {
-        try {
-          const parsed = JSON.parse(savedLocally);
-          if (isMounted) setCurrentUser(parsed);
-        } catch {
-          // ignore parsing error
-        }
-      } else if (mockUsers[currentRole]) {
-        if (isMounted) setCurrentUser(mockUsers[currentRole]);
-      }
-
-      // Sync with Python SQLite Backend
+    async function syncUser() {
+      if (!currentUser) return;
       try {
         const backendUser = await fetchUserByRole(currentRole);
         if (backendUser && isMounted) {
           setCurrentUser(backendUser);
-          localStorage.setItem(`alinhava_user_${currentRole}`, JSON.stringify(backendUser));
+          localStorage.setItem('alinhava_active_user', JSON.stringify(backendUser));
         }
       } catch (err) {
         console.warn('Usando dados locais:', err);
       }
     }
 
-    loadUser();
+    syncUser();
 
     return () => {
       isMounted = false;
@@ -64,18 +61,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (role: UserRole = 'client') => {
     setCurrentRole(role);
+    const user = mockUsers[role];
+    setCurrentUser(user);
+    localStorage.setItem('alinhava_active_user', JSON.stringify(user));
   };
 
   const loginWithCredentials = async (email: string, password: string): Promise<User> => {
     const user = await loginUserApi(email, password);
     setCurrentRole(user.role);
     setCurrentUser(user);
+    localStorage.setItem('alinhava_active_user', JSON.stringify(user));
     localStorage.setItem(`alinhava_user_${user.role}`, JSON.stringify(user));
     return user;
   };
 
   const logout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('alinhava_active_user');
   };
 
   const updateCurrentUser = async (data: Partial<User>): Promise<User> => {
@@ -90,11 +92,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const responseUser = await updateUserData(currentUser.id, data);
       setCurrentUser(responseUser);
+      localStorage.setItem('alinhava_active_user', JSON.stringify(responseUser));
       localStorage.setItem(`alinhava_user_${currentRole}`, JSON.stringify(responseUser));
       return responseUser;
     } catch (err) {
       console.warn('Backend falhou, salvando no localStorage e estado local:', err);
       setCurrentUser(updatedUser);
+      localStorage.setItem('alinhava_active_user', JSON.stringify(updatedUser));
       localStorage.setItem(`alinhava_user_${currentRole}`, JSON.stringify(updatedUser));
       return updatedUser;
     }
@@ -104,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newUser = await registerUserApi(payload);
     setCurrentRole(payload.role);
     setCurrentUser(newUser);
+    localStorage.setItem('alinhava_active_user', JSON.stringify(newUser));
     localStorage.setItem(`alinhava_user_${payload.role}`, JSON.stringify(newUser));
     return newUser;
   };

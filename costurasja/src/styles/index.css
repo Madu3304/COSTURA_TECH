@@ -1,5 +1,9 @@
 @import './tokens.css';
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -96,11 +100,13 @@ p, span, label {
 .btn-primary {
   background-color: var(--primary);
   color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(22, 110, 119, 0.20);
 }
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
-  box-shadow: 0 2px 8px rgba(14, 116, 109, 0.28);
+  box-shadow: 0 4px 14px rgba(22, 110, 119, 0.32);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -110,17 +116,21 @@ p, span, label {
 }
 
 .btn-secondary:hover {
-  background-color: var(--surface);
-  border-color: #B6D3CF;
+  background-color: var(--surface-alt);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .btn-soft {
   background-color: var(--primary-soft);
   color: var(--primary);
+  border-color: var(--border);
 }
 
 .btn-soft:hover {
-  background-color: #CCEAE6;
+  background-color: var(--primary-soft-hover);
+  color: var(--primary-dark);
 }
 
 .btn-danger {
@@ -180,7 +190,7 @@ p, span, label {
 
 .input:focus, .select:focus, .textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(14, 116, 109, 0.15);
+  box-shadow: 0 0 0 3px rgba(22, 110, 119, 0.18);
 }
 
 .input::placeholder, .textarea::placeholder {
@@ -240,12 +250,13 @@ p, span, label {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 24px;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-hover:hover {
-  border-color: #B6D3CF;
-  box-shadow: 0 4px 14px rgba(18, 39, 38, 0.08);
+  border-color: #A3CEC8;
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
 }
 
 .card-surface {

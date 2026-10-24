@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
 import { UserRole } from '../../lib/types';
+import logoImg from '../../assets/logo.png';
 import { 
   Mail, 
   Lock, 
@@ -94,20 +95,12 @@ export const LoginPage: React.FC = () => {
     <div style={{ padding: '60px 0', minHeight: '80vh', display: 'flex', alignItems: 'center' }}>
       <div className="container" style={{ maxWidth: '480px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              backgroundColor: 'var(--primary-soft)',
-              color: 'var(--primary)',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px'
-            }}
-          >
-            <Scissors size={26} />
+          <div style={{ marginBottom: '16px' }}>
+            <img
+              src={logoImg}
+              alt="Alinhava Gestão Têxtil"
+              style={{ height: '54px', width: 'auto', margin: '0 auto', display: 'block' }}
+            />
           </div>
           <h1 style={{ fontSize: '26px' }}>Entrar na Alinhava</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px' }}>
